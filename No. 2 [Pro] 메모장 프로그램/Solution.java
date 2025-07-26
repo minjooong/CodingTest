@@ -22,7 +22,7 @@ class Solution
 	
 	private static char[] mStr = new char[90001];
 	
-	private static boolean run(BufferedReader br) throws Exception
+	private static boolean run(BufferedReader br, int testcase) throws Exception
 	{
 		StringTokenizer st = new StringTokenizer(br.readLine(), " ");
 		
@@ -62,6 +62,7 @@ class Solution
 				if (ret != ans)
 				{
 					correct = false;
+                    System.out.println("CMD_MOVECURSOR at " + testcase + " query " + q + ": expected " + ans + ", but got " + ret);
 				}
 			}
 			else if (cmd == CMD_COUNT)
@@ -74,6 +75,8 @@ class Solution
 				if (ret != ans)
 				{
 					correct = false;
+                    System.out.println("CMD_COUNT at " + testcase + " query " + q + ": expected " + ans + ", but got " + ret);
+
 				}
 			}
 		}
@@ -94,7 +97,7 @@ class Solution
 		
 		for (int testcase = 1; testcase <= TC; ++testcase)
 		{
-			int score = run(br) ? MARK : 0;
+			int score = run(br, testcase) ? MARK : 0;
 			
 			System.out.println("#" + testcase + " " + score);
 		}
