@@ -3,7 +3,7 @@ import java.util.*;
 class UserSolution
 {
     ArrayList<LinkedList<Character>> list;
-
+    ArrayList<int[]> countList;
     int H, W;
     int cRow, cCol; // 현재 마지막 글자 위치
     int row, col;
@@ -13,14 +13,17 @@ class UserSolution
         this.H = H;
         this.W = W;
         this.list = new ArrayList<>();
+        this.countList = new ArrayList<>();
         for (int i = 0; i < H; i++) {
             list.add(new LinkedList<Character>());
+            countList.add(new int[26]);
         }
         row = col = 0;
         for (char c : mStr) {
             if ( c == '\0' ) continue;
 
             list.get(row).addLast(c);
+            countList.get(row)[c - 'a']++;
             if (++col >= W) {
                 col = 0;
                 row++;
@@ -35,11 +38,14 @@ class UserSolution
 	void insert(char mChar)
 	{
         list.get(row).add(col, mChar);
+        countList.get(row)[mChar - 'a']++;
 
         for (int i = row; i <= cRow; i++) {
             if (list.get(i).size() > W) {
                 char overFlow = list.get(i).removeLast();
+                countList.get(i)[overFlow - 'a']--;
                 list.get(i+1).addFirst(overFlow);
+                countList.get(i+1)[overFlow - 'a']++;
             }
         }
         if (++col >= W) {
@@ -75,12 +81,16 @@ class UserSolution
             }
         }
 
+        // 시간복잡도 O(HW) -> 시간초과 (40,000 * 300 * 300 = 3,600,000,000)
+        // for (int i = row+1; i <= cRow; i++) {
+        //     for (char c : list.get(i)) {
+        //         if (c == mChar) {
+        //             count++;
+        //         }
+        //     }
+        // }
         for (int i = row+1; i <= cRow; i++) {
-            for (char c : list.get(i)) {
-                if (c == mChar) {
-                    count++;
-                }
-            }
+            count += countList.get(i)[mChar - 'a'];
         }
 
         return count;
