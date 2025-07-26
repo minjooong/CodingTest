@@ -27,7 +27,6 @@
 /////////////////////////////////////////////////////////////////////////////////////////////
 import java.util.Scanner;
 import java.io.FileInputStream;
-import java.util.ArrayList;
 
 /*
    사용하는 클래스명이 Solution 이어야 하므로, 가급적 Solution.java 를 사용할 것을 권장합니다.
@@ -47,16 +46,14 @@ class Solution
     }
 
     private static Node[] tree;
-    private static int N, left, right;
-    private static char data;
-    private static String result;
+    private static StringBuilder sb;
 
     private static void inorder(int idx) {
         if (idx == -1) return;
 
         Node node = tree[idx];
         inorder(node.left);
-        result += node.data;
+        sb.append(node.data);
         inorder(node.right);
     }
 
@@ -89,29 +86,26 @@ class Solution
 			 */
 			/////////////////////////////////////////////////////////////////////////////////////////////
             
-            int length = sc.nextInt();
-            sc.nextLine();
+            int length = Integer.parseInt(sc.nextLine());
             tree = new Node[length + 1];
 
             for (int i = 0; i < length; i++) {
                 String[] tokens = sc.nextLine().split(" ");
 
-                N = Integer.parseInt(tokens[0]);
-                data = tokens[1].charAt(0);
+                int N = Integer.parseInt(tokens[0]);
+                char data = tokens[1].charAt(0);
 
-                if (tokens.length > 2) left = Integer.parseInt(tokens[2]);
-                else left = -1;
-                if (tokens.length > 3) right = Integer.parseInt(tokens[3]);
-                else right = -1;
+                int left = tokens.length > 2 ? Integer.parseInt(tokens[2]) : -1;
+                int right = tokens.length > 3 ? Integer.parseInt(tokens[3]) : -1;
 
                 tree[N] = new Node(data, left, right);
             }
 
-            result = "";
+            sb = new StringBuilder();
 
             inorder(1);
 
-            System.out.printf("#%d %s\n", test_case, result);
+            System.out.printf("#%d %s\n", test_case, sb.toString());
 		}
 	}
 }
