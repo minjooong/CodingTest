@@ -82,12 +82,15 @@ class Solution
             }
 
             int ans = 0;
-            for (int i=1; i <= 200000; i++) {
-                if (!possible(i)) continue;
-                else {
+            int min = 0;
+            int max = 200000;
+            while (min <= max) {
+                int i = min + (max - min) / 2;
+                if (possible(i)) {
                     ans = i;
-                    break;
+                    max = i - 1;
                 }
+                else min = i + 1;
             }
 
             System.out.printf("#%d %d\n", test_case, ans);
