@@ -34,68 +34,6 @@ import java.io.FileInputStream;
  */
 class Solution
 {
-    static class SegmentTree {
-        int[] maxTree, minTree;
-        int size;
-
-        SegmentTree(int[] arr) {
-            int n = arr.length;
-            size = 1;
-            while (size < n) size <<= 1;
-
-            maxTree = new int[2 * size];
-            minTree = new int[2 * size];
-            Arrays.fill(minTree, Integer.MAX_VALUE);
-
-            for (int i = 0; i < n; i++) {
-                maxTree[size + i] = arr[i];
-                minTree[size + i] = arr[i];
-            }
-
-            for (int i = size - 1; i > 0; i--) {
-                maxTree[i] = Math.max(maxTree[i << 1], maxTree[i << 1 | 1]);
-                minTree[i] = Math.min(minTree[i << 1], minTree[i << 1 | 1]);
-            }
-        }
-
-        void update(int index, int value) {
-            int i = index + size;
-            maxTree[i] = value;
-            minTree[i] = value;
-            i >>= 1;
-            while (i > 0) {
-                maxTree[i] = Math.max(maxTree[i << 1], maxTree[i << 1 | 1]);
-                minTree[i] = Math.min(minTree[i << 1], minTree[i << 1 | 1]);
-                i >>= 1;
-            }
-        }
-
-        int rangeMax(int l, int r) {
-            int res = Integer.MIN_VALUE;
-            l += size;
-            r += size;
-            while (l <= r) {
-                if ((l & 1) == 1) res = Math.max(res, maxTree[l++]);
-                if ((r & 1) == 0) res = Math.max(res, maxTree[r--]);
-                l >>= 1;
-                r >>= 1;
-            }
-            return res;
-        }
-
-        int rangeMin(int l, int r) {
-            int res = Integer.MAX_VALUE;
-            l += size;
-            r += size;
-            while (l <= r) {
-                if ((l & 1) == 1) res = Math.min(res, minTree[l++]);
-                if ((r & 1) == 0) res = Math.min(res, minTree[r--]);
-                l >>= 1;
-                r >>= 1;
-            }
-            return res;
-        }
-    }
 	public static void main(String args[]) throws Exception
 	{
 		/*
@@ -117,6 +55,8 @@ class Solution
 		   여러 개의 테스트 케이스가 주어지므로, 각각을 처리합니다.
 		*/
 
+        SegmentTree segmentTree = new SegmentTree();
+
 		for(int test_case = 1; test_case <= T; test_case++)
 		{
 		
@@ -126,34 +66,121 @@ class Solution
 			 */
 			/////////////////////////////////////////////////////////////////////////////////////////////
 
-            int n = sc.nextInt();
-            int q = sc.nextInt();
+            int n = sc.nextInt(); // 배열의 길이
+            int q = sc.nextInt(); // 쿼리 수
 
-            int[] arr = new int[n];
-            for (int i = 0; i < n; i++)
+            int arr[] = new int[n];
+            for (int i=0; i < n; i++) {
                 arr[i] = sc.nextInt();
+            }
+            segmentTree.init(arr);
+            StringBuilder sb = new StringBuilder();
+            sb.append("#").append(test_case);
 
-            SegmentTree tree = new SegmentTree(arr);
+            for (int i=0; i < q; i++) {
+                int query = sc.nextInt();
 
-            StringBuilder ans = new StringBuilder();
-            ans.append("#").append(test_case);
+                // max(al, al+1, ⋯, ar-1) - min(al, al+1, ⋯, ar-1)를 출력한다.
+                if (query == 1) {
+                    int ans = segmentTree.maxMinusMin(sc.nextInt(), sc.nextInt());
+                    sb.append(" ").append(ans);
+                }
 
-            for (int i = 0; i < q; i++) {
-                int type = sc.nextInt();
-                if (type == 0) {
-                    int idx = sc.nextInt();
-                    int x = sc.nextInt();
-                    tree.update(idx, x);
-                } else if (type == 1) {
-                    int l = sc.nextInt();
-                    int r = sc.nextInt() - 1;
-                    int maxVal = tree.rangeMax(l, r);
-                    int minVal = tree.rangeMin(l, r);
-                    ans.append(" ").append(maxVal - minVal);
+                // ai 를 x로 바꾼다.
+                if (query == 0) {
+                    segmentTree.update(sc.nextInt(), sc.nextInt());
                 }
             }
 
-            System.out.println(ans.toString());
+            System.out.println(sb.toString());
 		}
 	}
+
+    static class SegmentTree {
+        int[] minTree, maxTree;
+        int arrLength;
+
+        class Node {
+            int min, max;
+
+            Node(int min, int max) {
+                this.min = min;
+                this.max = max;
+            }
+        }
+
+        public void init(int[] arr) {
+            this.arrLength = arr.length;
+            minTree = new int[arrLength * 4];
+            maxTree = new int[arrLength * 4];
+
+            initRec(1, 0, arrLength - 1, arr);
+        }
+
+        private Node initRec(int current, int min, int max, int[] arr) {
+            if (min == max) {
+                minTree[current] = arr[min];
+                maxTree[current] = arr[min];
+                return new Node(minTree[current], maxTree[current]);
+            }
+
+            int mid = min + (max - min)/2;
+            Node left = initRec(current * 2, min, mid, arr);
+            Node right = initRec(current * 2 + 1, mid + 1, max, arr);
+
+            minTree[current] = Math.min(left.min, right.min);
+            maxTree[current] = Math.max(left.max, right.max);
+
+            return new Node(minTree[current], maxTree[current]);
+        }
+
+        public void update(int destination, int value) {
+            int current = 1;
+            int min = 0;
+            int max = arrLength - 1;
+            updateRec(current, min, max, destination, value);
+        }
+
+        private Node updateRec(int current, int min, int max, int destination, int value) {
+            if (min == max) {
+                if (min == destination) {
+                    minTree[current] = value;
+                    maxTree[current] = value;
+                }
+                return new Node(minTree[current], maxTree[current]);
+            }
+
+            if (min > destination || max < destination) return new Node(minTree[current], maxTree[current]);
+
+            int mid = min + (max - min)/2;
+            Node left = updateRec(current * 2, min, mid, destination, value);
+            Node right = updateRec(current * 2 + 1, mid + 1, max, destination, value);
+
+            minTree[current] = Math.min(left.min, right.min);
+            maxTree[current] = Math.max(left.max, right.max);
+
+            return new Node(minTree[current], maxTree[current]);
+        }
+
+        public int maxMinusMin(int destMin, int destMax) {
+            int current = 1;
+            int min = 0;
+            int max = arrLength -1;
+
+            Node node = segmentSearchRec(current, min, max, destMin, destMax);
+
+            return node.max - node.min;
+        }
+
+        private Node segmentSearchRec(int current, int min, int max, int destMin, int destMax) {
+            if (min >= destMin && max < destMax) return new Node(minTree[current], maxTree[current]);
+            if (min >= destMax || max < destMin) return new Node(Integer.MAX_VALUE, Integer.MIN_VALUE);
+
+            int mid = min + (max - min)/2;
+            Node left = segmentSearchRec(current * 2, min, mid, destMin, destMax);
+            Node right = segmentSearchRec(current * 2 + 1, mid + 1, max, destMin, destMax);
+
+            return new Node(Math.min(left.min, right.min), Math.max(left.max, right.max));
+        }
+    }
 }
