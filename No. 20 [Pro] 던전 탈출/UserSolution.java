@@ -2,113 +2,106 @@ import java.util.*;
 
 class UserSolution
 {
-    private int N;
-    private int maxStamina;
-    private int[][] map;
-    private int[][] gateId;
-    private boolean[] removed;
-    private List<List<int[]>> gateGraph;
-    private int maxId;
-    private int[] dx = {0, 0, -1, 1};
-    private int[] dy = {-1, 1, 0, 0};
-    
-    void init(int N, int mMaxStamina, int mMap[][])
-    {
+    int N;
+    int maxStamina;
+    int[][] map = new int[350][350];
+    Map<Integer, Map<Integer, Integer>> gates = new HashMap<>(200);
+
+    Queue<int[]> queue = new ArrayDeque<>();
+    int[][] visited = new int[350][350];
+    Queue<Node> pQueue = new PriorityQueue<>(Comparator.comparingInt(node -> node.time));
+    Map<Integer, Integer> visitedGate = new HashMap<>();
+    int[] dx = {1, -1, 0, 0};
+    int[] dy = {0, 0, 1, -1};
+
+    class Node {
+        int gateId, time;
+
+        Node(int gateId, int time) {
+            this.gateId = gateId;
+            this.time = time;
+        }
+    }
+
+	void init(int N, int mMaxStamina, int mMap[][])
+	{
         this.N = N;
         this.maxStamina = mMaxStamina;
-        this.map = new int[N][N];
-        this.gateId = new int[N][N];
-        this.removed = new boolean[201];
-        this.gateGraph = new ArrayList<>();
-        this.maxId = 0;
-        
-        for (int i = 0; i <= 200; i++) {
-            gateGraph.add(new ArrayList<>());
-            removed[i] = false;
-        }
-        
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
-                this.map[i][j] = mMap[i][j];
-                this.gateId[i][j] = 0;
-            }
-        }
-    }
+        for (int i=0; i < N; i++) map[i] = Arrays.copyOf(mMap[i], N);
+        gates.clear();
+		return;
+	}
 
-    void addGate(int mGateID, int mRow, int mCol)
-    {
-        gateId[mRow][mCol] = mGateID;
-        maxId = Math.max(maxId, mGateID);
-        
-        boolean[][] visited = new boolean[N][N];
-        Queue<int[]> queue = new ArrayDeque<>();
-        
-        queue.offer(new int[]{mRow, mCol, 0});
-        visited[mRow][mCol] = true;
-        
+	void addGate(int mGateID, int mRow, int mCol)
+	{
+        int gateId = mGateID + 1;
+        map[mRow][mCol] = gateId;
+        gates.put(gateId, new HashMap<>());
+
+        queue.clear();
+        for (int i=0; i < N; i++) Arrays.fill(visited[i], Integer.MAX_VALUE);
+
+        queue.offer(new int[] {mRow, mCol});
+        visited[mRow][mCol] = 0;
+
         while (!queue.isEmpty()) {
             int[] current = queue.poll();
-            int x = current[0], y = current[1], cost = current[2];
-            
-            if (gateId[x][y] != 0) {
-                int targetGateId = gateId[x][y];
-                if (targetGateId != mGateID) {
-                    gateGraph.get(mGateID).add(new int[]{targetGateId, cost});
-                    gateGraph.get(targetGateId).add(new int[]{mGateID, cost});
+            int currentTime = visited[current[0]][current[1]];
+            if (currentTime >= maxStamina) continue;
+            for (int i=0; i < 4; i++) {
+                int nx = current[0] + dx[i];
+                int ny = current[1] + dy[i];
+
+                if (map[nx][ny] == 1) continue;
+                if (visited[nx][ny] != Integer.MAX_VALUE) continue;
+
+                visited[nx][ny] = currentTime + 1;
+                if (gates.containsKey(map[nx][ny])) {
+                    gates.get(map[nx][ny]).put(gateId, visited[nx][ny]);
+                    gates.get(gateId).put(map[nx][ny], visited[nx][ny]);
                 }
-            }
-            
-            if (cost == maxStamina) continue;
-            
-            for (int i = 0; i < 4; i++) {
-                int nx = x + dx[i];
-                int ny = y + dy[i];
-                
-                if (nx < 0 || nx >= N || ny < 0 || ny >= N) continue;
-                if (visited[nx][ny] || map[nx][ny] == 1) continue;
-                
-                visited[nx][ny] = true;
-                queue.offer(new int[]{nx, ny, cost + 1});
+                queue.offer(new int[] {nx, ny});
             }
         }
-    }
+		return;
+	}
 
-    void removeGate(int mGateID)
-    {
-        removed[mGateID] = true;
-    }
+	void removeGate(int mGateID)
+	{
+        int gateId = mGateID + 1;
+        Map<Integer, Integer> connectedGates = gates.remove(gateId);
+        if (connectedGates == null) return;
+        for (int connectedGate : connectedGates.keySet()) {
+            gates.get(connectedGate).remove(gateId);
+        }
+		return;
+	}
 
-    int getMinTime(int mStartGateID, int mEndGateID)
-    {
-        int[] dist = new int[maxId + 1];
-        boolean[] inQueue = new boolean[maxId + 1];
-        Arrays.fill(dist, Integer.MAX_VALUE);
-        
-        Queue<Integer> queue = new ArrayDeque<>();
-        queue.offer(mStartGateID);
-        dist[mStartGateID] = 0;
-        inQueue[mStartGateID] = true;
-        
-        while (!queue.isEmpty()) {
-            int u = queue.poll();
-            inQueue[u] = false;
-            
-            for (int[] edge : gateGraph.get(u)) {
-                int v = edge[0];
-                int weight = edge[1];
-                
-                if (removed[v]) continue;
-                
-                if (dist[u] + weight < dist[v]) {
-                    dist[v] = dist[u] + weight;
-                    if (!inQueue[v]) {
-                        queue.offer(v);
-                        inQueue[v] = true;
-                    }
+	int getMinTime(int mStartGateID, int mEndGateID)
+	{
+        int start = mStartGateID + 1;
+        int end = mEndGateID + 1;
+        pQueue.clear();
+        visitedGate.clear();
+        pQueue.offer(new Node(start, 0));
+        visitedGate.put(start, 0);
+
+        while (!pQueue.isEmpty()) {
+            Node current = pQueue.poll();
+            int currentTime = current.time;
+
+            if (current.gateId == end) return currentTime;
+
+            Map<Integer, Integer> connectedGates = gates.get(current.gateId);
+            if (connectedGates == null) continue;
+            for (int id : connectedGates.keySet()) {
+                int nextTime = connectedGates.get(id) + currentTime;
+                if (visitedGate.get(id) == null || visitedGate.get(id) > nextTime) {
+                    visitedGate.put(id, nextTime);
+                    pQueue.offer(new Node(id, nextTime));
                 }
             }
         }
-        
-        return dist[mEndGateID] == Integer.MAX_VALUE ? -1 : dist[mEndGateID];
-    }
+		return -1;
+	}
 }
