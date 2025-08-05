@@ -62,9 +62,6 @@ class UserSolution {
         update(mCol, mCol + mLength, mHeight);
         ret.top = max - minBoard[1];
         ret.count = (int)((count - (long)minBoard[1] * C) % 1_000_000L);
-        // System.out.print(minBoard[1] + " ");
-        // System.out.print(ret.top + " ");
-        // System.out.println(ret.count);
         return ret;
     }
 
