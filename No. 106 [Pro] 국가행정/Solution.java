@@ -60,7 +60,7 @@ class Solution
 				ret = usersolution.divide(from, to, num);
 				ans = sc.nextInt();
 				if (ret != ans)
-					// okay = false;
+					okay = false;
 				break;
 			default:
 				okay = false;
@@ -85,7 +85,6 @@ class Solution
 			int score = run() ? MARK : 0;
 			System.out.println("#" + testcase + " " + score);
 		}
-		
 		sc.close();
 	}
 }

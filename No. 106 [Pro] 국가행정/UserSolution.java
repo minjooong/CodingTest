@@ -20,7 +20,7 @@ class UserSolution
 
         city = Arrays.copyOf(mPopulation, 10000);
         Arrays.fill(roadCount, 1);
-        pq.clear();
+        pq.clear(); // 초기화를 잘 하자.
 
         for (int i=0; i < N - 1; i++) {
             roadSumTree[size + i] = city[i] + city[i+1];
@@ -39,15 +39,6 @@ class UserSolution
 
 	int expand(int M)
 	{
-        // for (int i=0; i < N - 1; i++) {
-        //     System.out.print(roadSumTree[size + i] + " ");
-        // }
-        // System.out.println();
-        // for (int i=0; i < N - 1; i++) {
-        //     System.out.print(roadCount[i] + "   ");
-        // }
-        // System.out.println();
-
         int newCost = 0;
         for (int i=0; i < M; i++) {
             Entry entry = pq.poll();
@@ -90,9 +81,37 @@ class UserSolution
 		return result;
 	}
 	
+    boolean possible(int mFrom, int mTo, int max, int K) {
+        int tmpSum = 0;
+        int kCount = 1;
+        for (int i = mFrom; i <= mTo; i++) {
+            if (tmpSum + city[i] > max) {
+                tmpSum = 0;
+                kCount++;
+                if (kCount > K) return false;
+            }
+            tmpSum += city[i];
+        }
+
+        return true;
+    }
+
 	int divide(int mFrom, int mTo, int K)
 	{
-		return 0;
+        int left = 1;
+        int right = 10000000;
+
+        while (left != right) {
+            int max = left + (right - left) / 2;
+
+            if (possible(mFrom, mTo, max, K)) {
+                right = max;
+            }
+            else {
+                left = max + 1;
+            }
+        }
+		return right;
 	}
 }
 
