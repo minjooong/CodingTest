@@ -7,6 +7,9 @@ class UserSolution {
     HashMap<Integer, House> houses = new HashMap<>();
     HashMap<Integer, City> cities = new HashMap<>();
 
+    @SuppressWarnings("unchecked")
+    List<Integer>[][] map = new ArrayList[100][100];
+
     class House {
         int houseId;
         int x, y;
@@ -60,44 +63,63 @@ class UserSolution {
         count = 0;
         houses.clear();
         cities.clear();
+        
+        for (int i = 0; i < 100; i++) {
+            for (int j = 0; j < 100; j++) {
+                map[i][j] = new ArrayList<>();
+            }
+        }
 
 		return;
 	}
 
+    int[] dx = new int[] {-1, 0, 1, -1, 0, 1, -1, 0, 1};
+    int[] dy = new int[] {1, 1, 1, 0, 0, 0, -1, -1, -1};
 	public int add(int mId, int mX, int mY) {
         House newHouse = new House(mId, mX, mY);
         houses.put(newHouse.houseId, newHouse);
-
+        int x = mX / L;
+        int y = mY / L;
+        map[x][y].add(mId);
         int res = 0;
 
-        for (House house : houses.values()) {
-            if (house.houseId == newHouse.houseId) continue;
-            if (house.cityId == newHouse.cityId) continue;
-            if (house.isRemoved) continue;
+        for (int i = 0; i < 9; i++) {
+            int nx = x + dx[i];
+            int ny = y + dy[i];
+            if (nx < 0 || nx > 100 || ny < 0 || ny > 100) continue;
+            
+            for (int houseId : map[nx][ny]) {
+                House house = houses.get(houseId);
+            
+                if (house.houseId == newHouse.houseId) continue;
+                if (house.cityId == newHouse.cityId) continue;
+                if (house.isRemoved) continue;
 
-            int distance = Math.abs(house.x - newHouse.x) + Math.abs(house.y - newHouse.y);
-            if (distance <= L) {
-                if (newHouse.cityId == -1) {
-                    newHouse.cityId = house.cityId;
-                    City city = cities.get(newHouse.cityId);
-                    city.houses.offer(newHouse.houseId);
-                    res = ++city.houseCount;
-                }
-                else {
-                    City city1 = cities.get(newHouse.cityId);
-                    City city2 = cities.get(house.cityId);
-                    
-                    int size = city1.houses.size();
-                    for (int i = 0; i < size; i++) {
-                        House dupHouse = houses.get(city1.houses.poll());
-                        dupHouse.cityId = city2.cityId;
-                        city2.houses.offer(dupHouse.houseId);
+                int distance = Math.abs(house.x - newHouse.x) + Math.abs(house.y - newHouse.y);
+                if (distance <= L) {
+                    if (newHouse.cityId == -1) {
+                        newHouse.cityId = house.cityId;
+                        City city = cities.get(newHouse.cityId);
+                        city.houses.offer(newHouse.houseId);
+                        res = ++city.houseCount;
                     }
-                    cities.remove(city1.cityId);
+                    else {
+                        City city1 = cities.get(newHouse.cityId);
+                        City city2 = cities.get(house.cityId);
 
-                    res = city2.houseCount += city1.houseCount;
+                        int size = city1.houses.size();
+                        for (int j = 0; j < size; j++) {
+                            House dupHouse = houses.get(city1.houses.poll());
+                            dupHouse.cityId = city2.cityId;
+                            city2.houses.offer(dupHouse.houseId);
+                        }
+                        cities.remove(city1.cityId);
+
+                        res = city2.houseCount += city1.houseCount;
+                    }
                 }
             }
+
         }
         if (newHouse.cityId == -1) {
             City newCity = new City(count++);
