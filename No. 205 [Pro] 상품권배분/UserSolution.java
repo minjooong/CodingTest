@@ -38,7 +38,6 @@ public class UserSolution {
 	public int add(int mId, int mNum, int mParent) {
         Node parentNode = nodes.get(mParent);
 
-        if (parentNode == null) System.out.println(mParent);
         if (parentNode.childNodes.size() >= 3) return -1;
         parentNode.childNodes.add(mId);
 
@@ -82,7 +81,28 @@ public class UserSolution {
 
         if (totalSum <= K) return maxSum;
 
+        int l = K / N;
+        int r = maxSum;
 
-		return 0;
+        int res = l;
+        while (l <= r) {
+            int mid = l + (r - l) / 2;
+
+            totalSum = 0;
+            for (int id : rootNodes) {
+                int sum = nodes.get(id).sum;
+                if (sum < mid) totalSum += sum;
+                else totalSum += mid;
+            }
+            if (totalSum <= K) {
+                res = mid;
+                l = mid + 1;
+            }
+            else {
+                r = mid - 1;
+            }
+        }
+        
+		return res;
 	}
 }

@@ -58,8 +58,8 @@ class Solution {
 					ans = Integer.parseInt(st.nextToken());
 					ret = usersolution.distribute(k);
 					if (ret != ans) {
-						//okay = false;
-                        //System.out.println("DISTRIBUTE " + ans + " BUT " + ret);
+						okay = false;
+                        System.out.println("DISTRIBUTE " + ans + " BUT " + ret);
                     }
 					break;
 				default:
