@@ -12,12 +12,20 @@ class UserSolution {
         int lengths[];
         int upShapes[];
 
+        int count[];
+
         Tank(int id, int width, int height, int[] lengths, int[] upShapes) {
             this.id = id;
             this.width = width;
             this.height = height;
             this.lengths = Arrays.copyOf(lengths, width);
             this.upShapes = Arrays.copyOf(upShapes, width);
+            this.count = new int[height];
+            for (int i = 0; i < width; i++) {
+                for (int j = 0; j < lengths[i]; j++) {
+                    count[j]++;
+                }
+            }
         }
     }
 
@@ -79,6 +87,9 @@ class UserSolution {
 
         Tank tankToAddStructures = tanks.get(tankId);
         for (int i = 0; i < 3; i++) {
+            for (int j = tankToAddStructures.lengths[index + i]; j < tankToAddStructures.lengths[index + i] + mLengths[i]; j++) {
+                tankToAddStructures.count[j]++;
+            }
             tankToAddStructures.lengths[index + i] += mLengths[i];
             tankToAddStructures.upShapes[index + i] = mUpShapes[i];
         }
@@ -90,6 +101,37 @@ class UserSolution {
 		Solution.Result ret = new Solution.Result();
 		ret.ID = ret.height = ret.used = 0;
 
+        for (Tank tank : tanks.values()) {
+            int remainWaterCount = mWater;
+            int maxHeight = 0;
+            for (int i = 0; i < tank.height; i++) {
+                int empty = tank.width - tank.count[i];
+                if (remainWaterCount < empty) break;
+                remainWaterCount -= empty;
+                maxHeight ++;
+            }
+
+            if (remainWaterCount == mWater) continue;
+            if (maxHeight > ret.height) {
+                ret.ID = tank.id;
+                ret.height = maxHeight;
+                ret.used = mWater - remainWaterCount;
+            }
+            else if (maxHeight == ret.height) {
+                if (mWater - remainWaterCount > ret.used) {
+                    ret.ID = tank.id;
+                    ret.height = maxHeight;
+                    ret.used = mWater - remainWaterCount;
+                }
+                else if (mWater - remainWaterCount == ret.used) {
+                    if (tank.id < ret.ID) {
+                        ret.ID = tank.id;
+                        ret.height = maxHeight;
+                        ret.used = mWater - remainWaterCount;
+                    }
+                }
+            }
+        }
 
 		return ret;
 	}
