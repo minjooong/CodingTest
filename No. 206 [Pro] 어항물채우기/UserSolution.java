@@ -5,6 +5,8 @@ class UserSolution {
     HashMap<Integer, Tank> tanks = new HashMap<>(20);
     HashMap<Integer, Integer> available = new HashMap<>(20);
 
+    HashMap<String, HashSet<Integer>> hashCount = new HashMap<>();
+
     class Tank {
         int id;
         int width, height;
@@ -34,16 +36,61 @@ class UserSolution {
         this.N = N;
         tanks.clear();
         available.clear();
+        hashCount.clear();
 
         for (int i = 0; i < N; i++) {
             Tank newTank = new Tank(mIDs[i], mWidth, mHeight, mLengths[i], mUpShapes[i]);
             tanks.put(mIDs[i], newTank);
         }
+        for (Tank tank : tanks.values()) {
+            for (int i = 0; i < tank.width-2; i++) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(tank.upShapes[i]).append(" ");
+                sb.append(tank.upShapes[i+1]).append(" ");
+                sb.append(tank.upShapes[i+2]);
 
+                if (!hashCount.containsKey(sb.toString())) {
+                    hashCount.put(sb.toString(), new HashSet<>());
+                }
+                hashCount.get(sb.toString()).add(1000*tank.id + i);
+            }
+        }
 	}
 
-	public int checkStructures(int mLengths[], int mUpShapes[], int mDownShapes[]) {
+    public int checkStructures(int mLengths[], int mUpShapes[], int mDownShapes[]) {
+        int count = 0;
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append(mDownShapes[0]).append(" ");
+        sb.append(mDownShapes[1]).append(" ");
+        sb.append(mDownShapes[2]);
+        if (!hashCount.containsKey(sb.toString())) {
+            return 0;
+        }
 
+        HashSet<Integer> set = hashCount.get(sb.toString());
+        for (int x : set) {
+            int tankId = x / 1000;
+            int index = x % 1000;
+            Tank tank = tanks.get(tankId);
+
+            if (tank.lengths[index] + mLengths[0] > tank.height) continue;
+            if (tank.lengths[index] + mLengths[0] <= tank.lengths[index+1]) continue;
+
+            if (tank.lengths[index+1] + mLengths[1] > tank.height) continue;
+            if (tank.lengths[index+1] + mLengths[1] <= tank.lengths[index]) continue;
+            if (tank.lengths[index+1] + mLengths[1] <= tank.lengths[index+2]) continue;
+
+            if (tank.lengths[index+2] + mLengths[2] > tank.height) continue;
+            if (tank.lengths[index+2] + mLengths[2] <= tank.lengths[index+1]) continue;
+
+            count++;
+        }
+
+		return count;
+	}
+
+	public int checkStructuresForAdd(int mLengths[], int mUpShapes[], int mDownShapes[]) {
         int count = 0;
         for (Tank tank : tanks.values()) {
             for (int i = 0; i < tank.width-2; i++) {
@@ -75,7 +122,7 @@ class UserSolution {
 
 	public int addStructures(int mLengths[], int mUpShapes[], int mDownShapes[]) {
         available.clear();
-        checkStructures(mLengths, mUpShapes, mDownShapes);
+        checkStructuresForAdd(mLengths, mUpShapes, mDownShapes);
         if (available.isEmpty()) return 0;
 
         Set<Integer> tankIdSet = available.keySet();
@@ -84,14 +131,37 @@ class UserSolution {
 
         int tankId = tankIdList.get(0);
         int index = available.get(tankId);
-
+        
         Tank tankToAddStructures = tanks.get(tankId);
+
+        for (int i = index - 2; i <= index + 2; i++) {
+            if (i < 0 || i+2 > tankToAddStructures.width - 1) continue;
+            StringBuilder sb = new StringBuilder();
+            sb.append(tankToAddStructures.upShapes[i]).append(" ");
+            sb.append(tankToAddStructures.upShapes[i+1]).append(" ");
+            sb.append(tankToAddStructures.upShapes[i+2]);
+            hashCount.get(sb.toString()).remove(1000 * tankId + i);
+        }
+
         for (int i = 0; i < 3; i++) {
             for (int j = tankToAddStructures.lengths[index + i]; j < tankToAddStructures.lengths[index + i] + mLengths[i]; j++) {
                 tankToAddStructures.count[j]++;
             }
             tankToAddStructures.lengths[index + i] += mLengths[i];
             tankToAddStructures.upShapes[index + i] = mUpShapes[i];
+        }
+
+        for (int i = index - 2; i <= index + 2; i++) {
+            if (i < 0 || i+2 > tankToAddStructures.width - 1) continue;
+            StringBuilder sb = new StringBuilder();
+            sb.append(tankToAddStructures.upShapes[i]).append(" ");
+            sb.append(tankToAddStructures.upShapes[i+1]).append(" ");
+            sb.append(tankToAddStructures.upShapes[i+2]);
+
+            if (!hashCount.containsKey(sb.toString())) {
+                hashCount.put(sb.toString(), new HashSet<>());
+            }
+            hashCount.get(sb.toString()).add(1000*tankId + i);
         }
 
 		return tankId * 1000 + index + 1;
