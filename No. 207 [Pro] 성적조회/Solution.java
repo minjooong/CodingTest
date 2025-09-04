@@ -8,7 +8,7 @@ class Solution {
 	private final static int CMD_REMOVE = 300;
 	private final static int CMD_QUERY = 400;
 
-	private final static UserSolution usersolution = new UserSolution();
+	private final static ImprovedUserSolution usersolution = new ImprovedUserSolution();
 
 	private static void String2Char(char[] buf, String str) {
 		for (int k = 0; k < str.length(); ++k)
