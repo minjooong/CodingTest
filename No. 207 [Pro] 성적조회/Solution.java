@@ -38,15 +38,19 @@ class Solution {
 					score = Integer.parseInt(st.nextToken());
 					ans = Integer.parseInt(st.nextToken());
 					ret = usersolution.add(id, grade, gender, score);
-					if (ret != ans)
+					if (ret != ans) {
 						okay = false;
+						System.out.println("ADD : " + ans + " but " + ret);
+					}
 					break;
 				case CMD_REMOVE:
 					id = Integer.parseInt(st.nextToken());
 					ans = Integer.parseInt(st.nextToken());
 					ret = usersolution.remove(id);
-					if (ret != ans)
+					if (ret != ans) {
 						okay = false;
+						System.out.println("REMOVE : " + ans + " but " + ret);
+					}
 					break;
 				case CMD_QUERY:
 					int gradeCnt, genderCnt;
@@ -63,8 +67,10 @@ class Solution {
 					score = Integer.parseInt(st.nextToken());
 					ans = Integer.parseInt(st.nextToken());
 					ret = usersolution.query(gradeCnt, gradeArr, genderCnt, genderArr, score);
-					if (ret != ans)
+					if (ret != ans) {
 						okay = false;
+						System.out.println("QUERY : " + ans + " but " + ret);
+					}
 					break;
 				default:
 					okay = false;
@@ -77,7 +83,7 @@ class Solution {
 	public static void main(String[] args) throws Exception {
 		int TC, MARK;
 
-		//System.setIn(new java.io.FileInputStream("res/sample_input.txt"));
+		System.setIn(new java.io.FileInputStream("sample_input.txt"));
 
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		StringTokenizer st = new StringTokenizer(br.readLine(), " ");
