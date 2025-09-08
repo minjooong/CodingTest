@@ -85,20 +85,22 @@ class UserSolution {
 
     public int reorganize(int M, int K) {
         Pair ret = reorganizeRec(root, K);
-        System.out.println(M + " but " + ret.groupCnt);
         if (ret.groupCnt <= M) return 1;
         return 0;
     }
 
     private Pair reorganizeRec(Node node, int K) {
         Pair ret = new Pair();
-        if (node.child[0] == null && node.child[1] == null) {
+        if (node.num > K) ret.Set(Integer.MAX_VALUE, 0);
+
+        else if (node.child[0] == null && node.child[1] == null) {
             ret.Set(1, node.num);
         }
 
         else if (node.child[0] != null && node.child[1] == null) {
             Pair childRet = reorganizeRec(node.child[0], K);
-            if (childRet.rootNum + node.num > K) {
+            if (childRet.groupCnt == Integer.MAX_VALUE) ret.Set(Integer.MAX_VALUE, 0);
+            else if (childRet.rootNum + node.num > K) {
                 ret.Set(childRet.groupCnt + 1, node.num);
             }
             else {
@@ -108,7 +110,8 @@ class UserSolution {
 
         else if (node.child[0] == null && node.child[1] != null) {
             Pair childRet = reorganizeRec(node.child[1], K);
-            if (childRet.rootNum + node.num > K) {
+            if (childRet.groupCnt == Integer.MAX_VALUE) ret.Set(Integer.MAX_VALUE, 0);
+            else if (childRet.rootNum + node.num > K) {
                 ret.Set(childRet.groupCnt + 1, node.num);
             }
             else {
@@ -119,8 +122,9 @@ class UserSolution {
         else if (node.child[0] != null && node.child[1] != null) {
             Pair childRet1 = reorganizeRec(node.child[0], K);
             Pair childRet2 = reorganizeRec(node.child[1], K);
-
-            if (childRet1.rootNum + childRet2.rootNum + node.num <= K) {
+            if (childRet1.groupCnt == Integer.MAX_VALUE) ret.Set(Integer.MAX_VALUE, 0);
+            else if (childRet2.groupCnt == Integer.MAX_VALUE) ret.Set(Integer.MAX_VALUE, 0);
+            else if (childRet1.rootNum + childRet2.rootNum + node.num <= K) {
                 ret.Set(childRet1.groupCnt + childRet2.groupCnt - 1, childRet1.rootNum + childRet2.rootNum + node.num);
             }
 

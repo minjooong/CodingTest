@@ -54,8 +54,8 @@ class Solution {
 					ret = usersolution.reorganize(m, k);
 					if (ret != ans) {
 						okay = false;
+						System.out.println("REORGANIZE : " + ans + " but " + ret);
                     }
-                    System.out.println("REORGANIZE : " + ans + " but " + ret);
 					break;
 				default:
 					okay = false;
@@ -76,7 +76,7 @@ class Solution {
 		TC = Integer.parseInt(st.nextToken());
 		MARK = Integer.parseInt(st.nextToken());
 
-		for (int testcase = 1; testcase <= 5; ++testcase) {
+		for (int testcase = 1; testcase <= TC; ++testcase) {
 			int score = run(br) ? MARK : 0;
             System.out.println("#" + testcase + " " + score);
 		}
